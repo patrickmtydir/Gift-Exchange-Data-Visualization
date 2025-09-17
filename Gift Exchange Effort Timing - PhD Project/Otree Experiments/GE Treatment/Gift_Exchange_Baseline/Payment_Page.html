@@ -1,0 +1,15 @@
+{{ extends 'global/Page.html' }}
+{{ block title }}Payment{{ endblock }}
+
+{{ block content }}
+
+<p>
+    Thank you for participating in the experiment. You earned a total of {{player.ECU_payoff_total}} ECUs, which converts to ${{ player.USD_payoff }}, this means that you earned ${{ player.USD_payoff_with_showup }} total, including the show-up fee. Please enter your name below, <b> check it for accuracy</b>, and then hit "Next." 
+    
+</p>
+
+{{formfields}}
+{{next_button}}
+
+
+{{ endblock }}

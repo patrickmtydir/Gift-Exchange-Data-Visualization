@@ -1,0 +1,17 @@
+{{ extends 'global/Page.html' }}
+{{ block title }}Stage 2{{ endblock }}
+
+{{ block content }}
+
+{{ if group.group_round_number == 1}}
+<p>
+    The practice round of Stage 2 will begin soon.
+</p>
+{{ else }}
+<p>
+    Round {{group.group_round_number}}, Stage 2 will begin soon.
+</p>
+{{ endif}}
+
+
+{{ endblock }}

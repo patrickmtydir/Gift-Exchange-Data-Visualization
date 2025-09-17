@@ -1,0 +1,120 @@
+{{ extends 'global/Page.html' }}
+{{ block title }}Stage 2{{ endblock }}
+
+{{ block content }}
+
+{{ if player.type == 1 }}
+{{ if player.worker_has_accepted_offer == 1 }}
+{{ if player.worker_selected_effort == False}}
+ Please select an effort level. You were paid a wage of {{player.wage_paid}} and your effort costs are shown below:<br>
+    <table class="table">
+    <thead>
+  <tr style="background-color:#D3D3D3;">
+        <th>Effort Level:</th>
+        <td>0.1</td>
+        <td>0.2</td>
+        <td>0.3</td>
+        <td>0.4</td>
+        <td>0.5</td>
+        <td>0.6</td>
+        <td>0.7</td>
+        <td>0.8</td>
+        <td>0.9</td>
+        <td>1.0</td>
+  </tr>
+</thead>
+    <tr>
+        <th>Cost of Effort:</th>
+        <td>0</td>
+        <td>1</td>
+        <td>2</td>
+        <td>4</td>
+        <td>6</td>
+        <td>8</td>
+        <td>10</td>
+        <td>12</td>
+        <td>15</td>
+        <td>18</td>
+    </tr>
+</table>
+<br> <b>Since you are employed, you will also incur an employment cost of 26 ECUs in addition to the effort cost you incur.</b> <br>
+        
+<label for="effort">Choose an effort level:</label>
+
+<select name="effort" id="effort_selection_input">
+  <option value=0></option>
+  <option value=0.1>0.1</option>
+  <option value=0.2>0.2</option>
+  <option value=0.3>0.3</option>
+  <option value=0.4>0.4</option>
+  <option value=0.5>0.5</option>
+  <option value=0.6>0.6</option>
+  <option value=0.7>0.7</option>
+  <option value=0.8>0.8</option>
+  <option value=0.9>0.9</option>
+  <option value=1.0>1.0</option>
+</select>
+  <br>
+  <input type="button" id="effort_button" onclick="effort_select()" value="Submit Effort Level">
+
+    <div id="0_effort_error" style="display: none">
+        <p style="color:#FF0000";>Please select an effort level from 0.1 to 1.0.</p>
+    </div>
+
+{{else}}
+        <p >Please click the "next" button and wait for the other workers to select their effort levels.</p>
+{{ next_button }}
+{{ endif }}
+{{ else }}
+    <p >You did not match with a firm this period.</p>    
+    <p >Please click the "next" button and wait for the other workers to select their effort levels.</p>
+{{ next_button }}
+{{ endif }}
+
+
+
+        
+{{ else }}
+        <p >Please click the "next" button and wait for the workers to select their effort levels.</p>
+        {{ next_button }}
+{{ endif }}
+
+
+
+
+
+{{ endblock }}
+
+{{ block scripts }}
+<script>
+var effort_level;
+let bid_number=js_vars.bid_number;
+let id_in_group = js_vars.id_in_group;
+let type = js_vars.type;
+let transaction_number=js_vars.transaction_number;
+let group_highest_bid =js_vars.group_highest_bid;
+let worker_has_accepted_offer=js_vars.worker_has_accepted_offer;
+let effort_selection_input = document.getElementById('effort_selection_input');
+let bid_history = document.getElementById('bid_history');
+let transaction_history = document.getElementById('transaction_history');
+function effort_select(){
+ effort_level=parseFloat(effort_selection_input.value);
+ document.getElementById("0_effort_error").style.display='none'; 
+ if (effort_level==0){
+ 	document.getElementById("0_effort_error").style.display='block'; 
+ }
+ else {
+   //document.getElementById("effort_selection").style.display='none';
+   //document.getElementById("please_wait_worker").style.display='block';
+   liveSend({"information_type": "effort", "effort":effort_level,"transaction_number":transaction_number, "id_in_group":id_in_group});
+   location.reload();
+}
+}
+setTimeout(
+    function () {
+        alert("Time has run out. Please make your decision if you have not already.");
+    },
+    30*1000 // 30 seconds
+);
+</script>
+{{ endblock }}

@@ -1,0 +1,314 @@
+{{ extends 'global/Page.html' }}
+{{ block title }}Stage 1{{ endblock }}
+
+{{ block content }}
+
+{{ if player.round_number > 1 }}
+<p><b>Round {{group.group_round_number}}</b></p>
+{{ endif }}
+
+{{ if player.round_number == 1 }}
+
+
+        <p style="color:#FF0000";><b>Please recall that this first round is for practice and does not affect your earnings. </b></p>
+
+
+{{ if player.type == 0 }}
+    <p>
+        You have been assigned the role of <b>firm</b>.
+    </p>
+{{ else }}
+    <p>
+        You have been assigned the role of <b>worker</b>. Your costs are described below
+    </p>
+
+{{ endif }}
+{{ endif }}
+
+{{ if player.round_number > 1 }}
+
+{{ if player.type == 0 }}
+    <p>
+        You are participating in Stage 1 as a <b>firm</b>.
+    </p>
+
+{{ else }}
+    <p>
+        You are participating in Stage 1 as a <b>worker</b>.
+    </p>
+
+{{ endif }}
+{{ endif }}
+
+{{ if player.type == 1 }}
+    <table class="table">
+    <thead>
+  <tr style="background-color:#D3D3D3;">
+        <th>Effort Level:</th>
+        <td>0.1</td>
+        <td>0.2</td>
+        <td>0.3</td>
+        <td>0.4</td>
+        <td>0.5</td>
+        <td>0.6</td>
+        <td>0.7</td>
+        <td>0.8</td>
+        <td>0.9</td>
+        <td>1.0</td>
+  </tr>
+</thead>
+    <tr>
+        <th>Cost of Effort:</th>
+        <td>0</td>
+        <td>1</td>
+        <td>2</td>
+        <td>4</td>
+        <td>6</td>
+        <td>8</td>
+        <td>10</td>
+        <td>12</td>
+        <td>15</td>
+        <td>18</td>
+    </tr>
+</table>
+<br>
+
+<p> <b>Employment Cost:</b> 26 </p>
+{{ endif }}
+
+  <div id="wage_offer" style="display: none">
+        Please make a wage offer. <br>
+        <input id="wage_offer_input" type="number">
+        <button type="button" onclick="wage_offer()">Make Wage Offer</button>        
+    <br>
+    </div>
+ <div id="low_bid_error" style="display: none">
+        <p style="color:#FF0000";>Your bid must be higher than the current highest bid and at least 26 ECUs.</p>
+    </div>
+
+    <div id="not_divisible_by_5_error" style="display: none">
+        <p style="color:#FF0000";>Your bid must be a multiple of 5.</p>
+    </div>
+
+    <div id="too_high_error" style="display: none">
+        <p style="color:#FF0000";>Your bid must be less than 126.</p>
+    </div>
+
+    <div id="not_int_error" style="display: none">
+        <p style="color:#FF0000";>Your bid must be a whole number.</p>
+    </div>
+    <div id="wage_accept" style="display: none">
+        Please accept a wage offer by entering the Bid Number. <br>
+        <input id="wage_accept_input" type="number">
+        <button type="button" onclick="wage_accept()">Accept Wage Offer</button>        
+    <br>
+    </div>
+
+<div id="wage_offer_accepted" style="display: none">
+        Your offer has been accepted. Your transaction number and wage paid are shown below. Please wait for the first stage to complete.
+                <p><b><center>Your Transaction:</center></b></p> 
+    <table id="your_transaction_history_firm" class="table">
+<thead>
+  <tr style="background-color:#D3D3D3;">
+    <th>Transaction Number:</th>
+    <th>Wage:</th>
+  </tr>
+</thead>
+<tr>
+</tr>
+    </table> 
+    <br>
+    </div>
+
+    <div id="firm_already_hired_error" style="display: none">
+        <p style="color:#FF0000";>It appears that the bid was already accepted.</p>
+    </div>
+
+    <div id="no_bid_error" style="display: none">
+        <p style="color:#FF0000";>It appears that the bid number is invalid.</p>
+    </div>
+
+<div id="wage_accepted" style="display: none"> 
+    You have accepted a wage for the period. Your transaction number and wage paid are shown below. Please wait for the first stage to complete. <br>
+                        <p><b><center>Your Transaction:</center></b></p> 
+    <table id="your_transaction_history_worker" class="table">
+    <thead>
+  <tr style="background-color:#D3D3D3;">
+    <th>Transaction Number:</th>
+    <th>Wage:</th>
+  </tr>
+</thead>
+<tr>
+</tr>
+    </table> 
+    <br>
+    </div>
+
+<p><b><center>Active Bids:</center></b></p>
+<table id="bid_history" class="table">
+<thead>
+  <tr style="background-color:#D3D3D3;">
+    <th>Bid Number:</th>
+    <th>Wage:</th>
+  </tr>
+</thead>
+<tr>
+</tr>
+</table>
+<br>
+
+<p><b><center>Transaction History:</center></b></p>
+<table id="transaction_history" class="table">
+<thead>
+  <tr style="background-color:#D3D3D3;">
+    <th>Transaction Number:</th>
+    <th>Wage:</th>
+  </tr>
+</thead>
+<tr>
+</tr>
+</table>
+<br>
+
+    <div id="current_offer" style="display: none">
+        <p><b><center>Your Offer History:</center></b></p>
+    <table id="your_bid_history" class="table">
+<thead>
+  <tr style="background-color:#D3D3D3;">
+    <th>Bid Number:</th>
+    <th>Wage:</th>
+  </tr>
+</thead>
+<tr>
+</tr>
+</table>
+<br>
+    </div>
+
+<script>
+    {% if player.type == 0 %} 
+       document.getElementById("wage_offer").style.display='block';
+       document.getElementById("current_offer").style.display='block'
+    {% else %}
+       document.getElementById("wage_accept").style.display='block'; 
+    {% endif %}
+</script>
+
+{{ endblock }}
+
+{{ block scripts }}
+<script>
+var firm_id;
+var worker_id;
+var wage_offer_made;
+var accepted_offer_number;
+var firm_offer_id;
+var wage_paid_chart;
+var wage_offer_amount;
+let bid_number=js_vars.bid_number;
+let id_in_group = js_vars.id_in_group;
+let type = js_vars.type;
+let transaction_number=js_vars.transaction_number;
+let group_highest_bid =js_vars.group_highest_bid;
+let worker_has_accepted_offer=js_vars.worker_has_accepted_offer;
+let wage_offer_input = document.getElementById('wage_offer_input');
+let bid_history = document.getElementById('bid_history');
+let transaction_history = document.getElementById('transaction_history');
+let your_bid_history = document.getElementById('your_bid_history');
+let your_transaction_history_firm = document.getElementById('your_transaction_history_firm');
+let your_transaction_history_worker = document.getElementById('your_transaction_history_worker');
+function wage_offer() {
+    //let bid_number=js_vars.bid_number;
+	wage_offer_made=parseFloat(wage_offer_input.value);
+	document.getElementById("low_bid_error").style.display='none';
+    document.getElementById("not_divisible_by_5_error").style.display='none';
+    document.getElementById("too_high_error").style.display='none';
+    document.getElementById("not_int_error").style.display='none';
+    if (wage_offer_made <1000){
+	liveSend({"information_type": "offer", "wage":wage_offer_made, "id_in_group":id_in_group});
+}
+}
+function wage_accept(){
+    document.getElementById("firm_already_hired_error").style.display="none";
+    document.getElementById("no_bid_error").style.display="none";
+  	if (worker_has_accepted_offer==0){
+    accepted_offer_number=parseFloat(document.getElementById("wage_accept_input").value);
+    if (accepted_offer_number <1000){
+    liveSend({"information_type":"accept", "offer_number":accepted_offer_number, "id_in_group":id_in_group})
+	}
+}
+  	if (worker_has_accepted_offer==1){
+    	document.getElementById("wage_accept").style.display="none";
+   		document.getElementById("wage_accepted").style.display="block";
+    }
+}
+function liveRecv(data){
+	if (data.information_type=="offer"){
+    	console.log("Wage Offer Recieved By Javascript", data);
+	    //wage_offer_amount=data.offer;
+	    //bid_number=data.bid_number;
+	    //firm_offer_id=data.firm_offer_id;
+        if(data.firm_id==id_in_group){
+        	your_bid_history.tBodies[0].innerHTML = "<tr id='tr_"+data.bid_number+"'><td>" + data.bid_number + '</td><td>' + data.wage + '</td></tr>' + your_bid_history.tBodies[0].innerHTML;
+        }
+        bid_history.tBodies[0].innerHTML = "<tr id='tr_"+data.bid_number+"'><td>" + data.bid_number + '</td><td>' + data.wage + '</td></tr>' + bid_history.tBodies[0].innerHTML;
+        document.getElementById("tr_" + data.previous_bid_number).style.display = "none";
+       // if(data.firm_id==id_in_group){
+          	//document.getElementById("low_bid_error").style.display='none';
+        	//document.getElementById("not_divisible_by_5_error").style.display='none';
+           // document.getElementById("too_high_error").style.display='none';
+            //document.getElementById("not_int_error").style.display='none';
+            //your_bid_history.tBodies[0].innerHTML = "<tr id='tr_"+data.bid_number+"'><td>" + data.bid_number + '</td><td>' + data.wage + '</td></tr>' + your_bid_history.tBodies[0].innerHTML;
+         
+    } 
+if (data.information_type=="error_message" && data.id_in_group==id_in_group){
+        console.log("Error Recieved By Javascript", data);
+    	if(data.low_bid=="True"){
+    		document.getElementById("low_bid_error").style.display='block';
+        }
+        if (data.not_multiple_of_5=="True"){
+        	document.getElementById("not_divisible_by_5_error").style.display='block';
+    	}
+  		if (data.too_high_bid=="True"){
+        	document.getElementById("too_high_error").style.display='block';
+        }
+  		if (data.not_int=="True"){
+        	document.getElementById("not_int_error").style.display='block';
+	}
+}  
+if (data.information_type=="accept"){
+  console.log("acceptance recieved on javascript",data)
+  transaction_history.tBodies[0].innerHTML = '<tr><td>' + data.transaction_number + '</td><td>' + data.wage + '</td></tr>' + transaction_history.tBodies[0].innerHTML;
+  document.getElementById("tr_" + data.offer_number).style.display = "none";
+  if(data.firm_id==id_in_group){
+        	document.getElementById("wage_offer").style.display="none";
+            document.getElementById("low_bid_error").style.display='none';
+        	document.getElementById("not_divisible_by_5_error").style.display='none';
+            document.getElementById("too_high_error").style.display='none';
+            document.getElementById("not_int_error").style.display='none';
+            //document.getElementById("current_offer").style.display="none";
+        	document.getElementById("wage_offer_accepted").style.display="block";
+          	your_transaction_history_firm.innerHTML += '<tr><td>' + data.transaction_number + '</td><td>' + data.wage + '</td></tr>';
+  }
+  if(data.worker_id==id_in_group){
+          document.getElementById("wage_accept").style.display="none";
+   		  document.getElementById("wage_accepted").style.display="block";
+          your_transaction_history_worker.innerHTML += '<tr><td>' + data.transaction_number + '</td><td>' + data.wage + '</td></tr>';
+
+    }
+}
+  if(data.information_type=="firm_already_hired_error"){
+    document.getElementById("firm_already_hired_error").style.display="block";
+  }
+  if(data.information_type=="invalid_transaction_number"){
+    document.getElementById("no_bid_error").style.display="block";
+  }
+}
+//setTimeout(
+//    function () {
+//        alert("There are 30 seconds remaining in Stage 1.");
+//    },
+//    60*1000 // 60 seconds
+//);
+</script>
+{{ endblock }}

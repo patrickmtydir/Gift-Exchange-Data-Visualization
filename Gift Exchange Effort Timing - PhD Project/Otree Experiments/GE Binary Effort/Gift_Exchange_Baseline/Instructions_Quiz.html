@@ -1,0 +1,42 @@
+{{ extends 'global/Page.html' }}
+{{ block title }}Instructions Quiz{{ endblock }}
+
+{{ block content }}
+
+<b> Please note that the numbers used in these examples are purely hypothetical and may not meet the rules discussed in the instructions.</b>
+{{ formfields }}
+{{ next_button }}
+
+
+
+{{ endblock }}
+
+{{ block scripts }}
+<script>
+        $(document).ready(function (e) {
+            labels = document.getElementsByTagName("label");
+
+            for (var i = 0; i < labels.length; i++) {
+                labels[i].innerHTML = labels[i].innerHTML.replaceAll("&lt;", "<").
+                                      replaceAll("&gt;", ">");
+            }
+        });
+
+//function next_page(){
+//  liveSend({"information_type": "next", "value":true});
+//  location.reload();
+//  window.scrollTo(0, 0);
+//}
+
+//function previous_page(){
+//  liveSend({"information_type": "previous", "value":true});
+//  location.reload();
+//  window.scrollTo(0, 0);
+//}
+
+//function answer(){
+//  liveSend({"information_type": "answers", "A1":forminputs.Q1.value, "A2":forminputs.Q2.value, "A3":forminputs.Q3.value, "A4":forminputs.Q4.value});
+//  location.reload()
+//}
+</script>
+{{ endblock }}

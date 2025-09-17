@@ -1,0 +1,40 @@
+{{ extends 'global/Page.html' }}
+{{ block title }}Research Information Sheet{{ endblock }}
+
+{{ block content }}
+
+<p>
+<b>Procedure and Compensation:</b> You are being asked to voluntarily participate in a research study. This study is an experiment examining the behavior of markets (with buyers and sellers) in an economic setting in which there is uncertainty. If you choose to participate, you will participate in the market as either a buyer or a seller and receive detailed instructions describing the economic setting and the rules of the experiment. The experiment will last up to 90 minutes. You will be assigned to a randomly chosen computer terminal. You will be asked to make decisions at the computer terminal. You will be playing a series of games with other participants. In addition to receiving $7 for showing up on time and participating, you will have the opportunity to earn additional compensation based upon your decisions, the decisions of other experimental participants, and the rules of the experiment. The instructions include detailed information how payment will be determined. You will have the opportunity to ask questions about the instructions before beginning the experiment.</p>
+
+<p>You may be asked to leave the experiment, following a verbal warning, if you engage in disruptive behavior such as talking with other subjects during the experiment or using electronic devices such as a cell phone or tablet. If you are asked to leave the session, you will be paid all earnings up to the time you leave and will bear no further penalties. </p>
+
+<p><b>Confidentiality:</b>  The confidentiality of your data will be protected to the extent allowed by law.  Information about your name and participation in this experiment will be retained as part of the payment records.  Once the payment records have been processed, any identifying information will be removed from your experimental data.  Your name will not be reported with any results related to this research. If data from this study is shared with other researchers in the future, no identifying information about you will be included. You will not be signing this form.</p>
+
+<p>Only the researcher, any research assistants conducting this experiment, and FSU administrators responsible for processing payoff records will know what your earnings are.  Compensation you receive as a result of your participation in this experiment may be reported for taxation purposes to appropriate federal and state agencies, but the results of the study will remain confidential and will not be forwarded to tax authorities.</p>
+
+<p>We will store your information in ways we think are secure. We will store paper files in locked filing cabinets. We will store electronic files in computer systems with password protection. However, we cannot guarantee complete confidentiality.</p>
+
+<p>If you have any questions, please contact Patrick Tydir at  ptydir@fsu.edu, ‪(850) 296-0886‬‬‬‬‬</p>
+
+<p>If you have any questions or concerns about your rights as a research participant, or regarding the study and would like to talk to someone other than the researcher(s), you are encouraged to contact the FSU IRB at telephone number 850-644-7900. You may also contact this office by email at humansubjects@fsu.edu, or by writing or in person at 2010 Levy Street, Research Building B, Suite 276, FSU Human Subjects Committee, Tallahassee, FL 32306-2742.</p>
+
+<p>A copy of this Information Sheet is available upon request.</p>
+
+{{ if player.IRB == False }}
+        <button type="button" onclick="IRB_read()">I have read this information.</button>         
+{{ endif }}  
+{{ if player.IRB == True }}
+        <p><b>Thank you for reading the information sheet. Please wait for others to read the information sheet and for the experiment to continue</b></p>         
+{{ endif }}     
+
+{{ endblock }}
+
+{{ block scripts }}
+<script>
+let id_in_group = js_vars.id_in_group;
+function IRB_read() {
+  liveSend({"information_type": "IRB", "value":true});
+  location.reload()
+}
+</script>
+{{ endblock }}
