@@ -195,6 +195,46 @@ plt.legend(bbox_to_anchor=(0.65, 1), loc='upper left')
 plt.savefig("Aggregate Effort vs. Wage Jitter.png", bbox_inches="tight")
 plt.clf()
 
+# Empirical CDFs
+ax=sb.ecdfplot(data=copy_data, x="effort", hue="Treatment", palette="colorblind", legend=True)
+ax.set(xlabel="Effort", title="Empirical CDF of Effort Levels", xticks=[0,0.2,0.4,0.6,0.8,1.0], yticks=[0,0.2,0.4,0.6,0.8,1.0])
+sb.move_legend(ax, "center right")
+ax.figure.savefig("Empirical CDF of Effort", bbox_inches="tight")
+plt.clf()
+
+ax=sb.ecdfplot(data=copy_data, x="wage", hue="Treatment", palette="colorblind", legend=True)
+ax.set(xlabel="Wage", title="Empirical CDF of Wages", xticks=[20,40,60,80,100,120], yticks=[0,0.2,0.4,0.6,0.8,1.0])
+sb.move_legend(ax, "center right")
+ax.figure.savefig("Empirical CDF of Wages", bbox_inches="tight")
+plt.clf()
+
+copy_data["total_surplus"]=copy_data["worker_surplus"]+copy_data["firm_surplus"]
+copy_data["worker_surplus_share"]=copy_data["worker_surplus"]/copy_data["total_surplus"]
+
+ax=sb.ecdfplot(data=copy_data, x="worker_surplus", hue="Treatment", palette="colorblind", legend=True)
+ax.set(xlabel="Worker Surplus", title="Empirical CDF of Worker Surplus", xticks=[20,40,60,80,100], yticks=[0,0.2,0.4,0.6,0.8,1.0])
+sb.move_legend(ax, "center right")
+ax.figure.savefig("Empirical CDF of Worker Surplus", bbox_inches="tight")
+plt.clf()
+
+ax=sb.ecdfplot(data=copy_data, x="firm_surplus", hue="Treatment", palette="colorblind", legend=True)
+ax.set(xlabel="Firm Surplus", title="Empirical CDF of Firm Surplus", xticks=[20,40,60,80,100], yticks=[0,0.2,0.4,0.6,0.8,1.0])
+sb.move_legend(ax, "center right")
+ax.figure.savefig("Empirical CDF of Firm Surplus", bbox_inches="tight")
+plt.clf()
+
+ax=sb.ecdfplot(data=copy_data, x="total_surplus", hue="Treatment", palette="colorblind", legend=True)
+ax.set(xlabel="Total Surplus", title="Empirical CDF of Total Surplus", xticks=[20,40,60,80,100], yticks=[0,0.2,0.4,0.6,0.8,1.0])
+sb.move_legend(ax, "center right")
+ax.figure.savefig("Empirical CDF of Total Surplus", bbox_inches="tight")
+plt.clf()
+
+ax=sb.ecdfplot(data=copy_data, x="worker_surplus_share", hue="Treatment", palette="colorblind", legend=True)
+ax.set(xlabel="Worker Surplus Share", title="Empirical CDF of Worker Surplus Shares", xticks=[0,0.2,0.4,0.6,0.8,1.0],yticks=[0,0.2,0.4,0.6,0.8,1.0])
+sb.move_legend(ax, "center right")
+ax.figure.savefig("Empirical CDF of Worker Surplus Shares", bbox_inches="tight")
+plt.clf()
+
 # Basic OLS with no fixed effects
 control_data["const"]=1
 treatment_data["const"]=1
@@ -251,22 +291,32 @@ z_stat=(control_result.params["wage"]-treatment_result.params["wage"])/(math.sqr
 p_value=1-norm.cdf(z_stat)
 print("Z-stats Basic OLS with individual fixed effects\n", "z=",z_stat,", p=", p_value)
 
-# One large Regression  
+# Setting Up Simultaneous Regressions
 all_data["const"]=1
 all_data["worker_identification"]=all_data["session"].astype(str)+"_"+all_data["worker_id"].astype(str)+all_data["treatment"].astype(str)
 all_data=all_data.set_index(["worker_identification","round_number"])
 all_data["EB_x_wage"]=all_data["treatment"]*all_data["wage"]
+
+
+# Simultaneous Regression, no fixed effects
+full_model=PanelOLS(all_data["effort"],all_data[["const","wage","EB_x_wage","treatment"]],entity_effects=False, time_effects=False, drop_absorbed=True)
+full_result=full_model.fit()
+print("Simultaneous OLS with no fixed effects\n", full_result)
+
+# Simultaneous Regression, with individual fixed effects
 full_model=PanelOLS(all_data["effort"],all_data[["const","wage","EB_x_wage","treatment"]],entity_effects=False, time_effects=True, drop_absorbed=True)
 full_result=full_model.fit()
-print("Big OLS with individual and period fixed effects\n", full_result)
+print("Simultaneous OLS with period fixed effects\n", full_result)
 
-# One large Regression, with individual fixed effects
-all_data["const"]=1
-all_data["worker_identification"]=all_data["session"].astype(str)+"_"+all_data["worker_id"].astype(str)+all_data["treatment"].astype(str)
-all_data["EB_x_wage"]=all_data["treatment"]*all_data["wage"]
+# Simultaneous Regression, with period and individual fixed effects
 full_model=PanelOLS(all_data["effort"],all_data[["const","wage","EB_x_wage","treatment"]],entity_effects=True, time_effects=True, drop_absorbed=True)
 full_result=full_model.fit()
-print(full_result)
+print("Simultaneous OLS with individual and period fixed effects\n", full_result)
+
+# Simultaneous Regression, with individual fixed effects
+full_model=PanelOLS(all_data["effort"],all_data[["const","wage","EB_x_wage","treatment"]],entity_effects=True, time_effects=False, drop_absorbed=True)
+full_result=full_model.fit()
+print("Simultaneous OLS with individual fixed effects\n", full_result)
 
 control_data["total_surplus"]=control_data["worker_surplus"]+control_data["firm_surplus"]
 treatment_data["total_surplus"]=treatment_data["worker_surplus"]+treatment_data["firm_surplus"]
