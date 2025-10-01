@@ -1,6 +1,6 @@
 # Patrick Tydir GitHub Portfolio
 
-### You will find several of my projects in the repository folders.
+#### You will find several of my projects in the repository folders.
 
 ## Gift Exchange Effort Timing - Data Visualization:
 This project contains my replication code for my solo-authored paper "Effort Timing and Reciprocity in the Gift Exchange," as well as all of the tables, graphs, and statistics I created using Python and R. The vast majority of the analysis uses python, so the R file is barebones.  
