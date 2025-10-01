@@ -4,32 +4,125 @@
 #2) Remove columns which are not needed
 #3) Standardize the Data and Var types
 
+# Please note that I had to load the file into VS code and change the encoding to `UTF-8 with BOM` in order for the data to import appropriately
+SET GLOBAL local_infile = 1;
+
+CREATE TABLE most_streamed_spotify_songs_2024 (
+    `Track` VARCHAR(255),
+    `Album_Name` VARCHAR(255),
+    `Artist` VARCHAR(255),
+    `Release_Date` VARCHAR(20),
+    `ISRC` VARCHAR(20),
+    `All_Time_Rank` INT,
+    `Track_Score` DECIMAL(10,2),
+    `Spotify_Streams` BIGINT NULL,
+    `Spotify_Playlist_Count` INT NULL,
+    `Spotify_Playlist_Reach` BIGINT NULL,
+    `Spotify_Popularity` INT NULL,
+    `YouTube_Views` BIGINT NULL,
+    `YouTube_Likes` BIGINT NULL,
+    `TikTok_Posts` INT NULL,
+    `TikTok_Likes` BIGINT NULL,
+    `TikTok_Views` BIGINT NULL,
+    `YouTube_Playlist_Reach` BIGINT NULL,
+    `Apple_Music_Playlist_Count` INT NULL,
+    `AirPlay_Spins` BIGINT NULL,
+    `SiriusXM_Spins` BIGINT NULL,
+    `Deezer_Playlist_Count` INT NULL,
+    `Deezer_Playlist_Reach` BIGINT NULL,
+    `Amazon_Playlist_Count` INT NULL,
+    `Pandora_Streams` BIGINT NULL,
+    `Pandora_Track_Stations` INT NULL,
+    `Soundcloud_Streams` BIGINT NULL,
+    `Shazam_Counts` BIGINT NULL,
+    `TIDAL_Popularity` INT NULL,
+    `Explicit_Track` BOOL NULL
+)
+CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+LOAD DATA LOCAL INFILE 'C:\\Users\\patri\\OneDrive - Florida State University\\SQL\\Projects\\Spotify\\Most Streamed Spotify Songs 2024.csv'
+INTO TABLE most_streamed_spotify_songs_2024
+CHARACTER SET utf8mb4
+FIELDS TERMINATED BY ','
+OPTIONALLY ENCLOSED BY '"'
+LINES TERMINATED BY '\n'
+IGNORE 1 ROWS
+(
+    Track,
+    Album_Name,
+    Artist,
+    Release_Date,
+    ISRC,
+    All_Time_Rank,
+    Track_Score,
+    @Spotify_Streams,
+    @Spotify_Playlist_Count,
+    @Spotify_Playlist_Reach,
+    @Spotify_Popularity,
+    @YouTube_Views,
+    @YouTube_Likes,
+    @TikTok_Posts,
+    @TikTok_Likes,
+    @TikTok_Views,
+    @YouTube_Playlist_Reach,
+    @Apple_Music_Playlist_Count,
+    @AirPlay_Spins,
+    @SiriusXM_Spins,
+    @Deezer_Playlist_Count,
+    @Deezer_Playlist_Reach,
+    @Amazon_Playlist_Count,
+    @Pandora_Streams,
+    @Pandora_Track_Stations,
+    @Soundcloud_Streams,
+    @Shazam_Counts,
+    @TIDAL_Popularity,
+    @Explicit_Track
+)
+SET 
+    Spotify_Streams = NULLIF(@Spotify_Streams, ''),
+    Spotify_Playlist_Count = NULLIF(@Spotify_Playlist_Count, ''),
+    Spotify_Playlist_Reach = NULLIF(@Spotify_Playlist_Reach, ''),
+    Spotify_Popularity = NULLIF(@Spotify_Popularity, ''),
+    YouTube_Views = NULLIF(@YouTube_Views, ''),
+    YouTube_Likes = NULLIF(@YouTube_Likes, ''),
+    TikTok_Posts = NULLIF(@TikTok_Posts, ''),
+    TikTok_Likes = NULLIF(@TikTok_Likes, ''),
+    TikTok_Views = NULLIF(@TikTok_Views, ''),
+    YouTube_Playlist_Reach = NULLIF(@YouTube_Playlist_Reach, ''),
+    Apple_Music_Playlist_Count = NULLIF(@Apple_Music_Playlist_Count, ''),
+    AirPlay_Spins = NULLIF(@AirPlay_Spins, ''),
+    SiriusXM_Spins = NULLIF(@SiriusXM_Spins, ''),
+    Deezer_Playlist_Count = NULLIF(@Deezer_Playlist_Count, ''),
+    Deezer_Playlist_Reach = NULLIF(@Deezer_Playlist_Reach, ''),
+    Amazon_Playlist_Count = NULLIF(@Amazon_Playlist_Count, ''),
+    Pandora_Streams = NULLIF(@Pandora_Streams, ''),
+    Pandora_Track_Stations = NULLIF(@Pandora_Track_Stations, ''),
+    Soundcloud_Streams = NULLIF(@Soundcloud_Streams, ''),
+    Shazam_Counts = NULLIF(@Shazam_Counts, ''),
+    TIDAL_Popularity = NULLIF(@TIDAL_Popularity, ''),
+    Explicit_Track = NULLIF(@Explicit_Track, '');
+
 # Making a copy so main table isn't edited before being sure of edits
 CREATE TABLE top_songs
-LIKE `most streamed spotify songs 2024`;
+LIKE most_streamed_spotify_songs_2024;
+
 INSERT top_songs
 SELECT *
-FROM `most streamed spotify songs 2024`;
+FROM most_streamed_spotify_songs_2024;
 
 # First glance at data
 SELECT *
 FROM top_songs;
 
-# Lots of columns defined as text. Let's remove duplicates first though
+# Let's remove duplicates first. First let's check if we need to trim tracks or artists 
 
 SELECT *, TRIM(Track), TRIM(Artist)
 FROM top_songs
 WHERE Track != TRIM(Track) OR Artist!= TRIM(Artist);
 
-# Two tracks weren't trimmed. Let's standardize Track and Artist so we can check for duplicates
-UPDATE top_songs
-SET Track = TRIM(Track), Artist = TRIM(Artist);
+# All tracks and artist names appear to not have trailing or leading spaces
 
-SELECT *, TRIM(Track), TRIM(Artist)
-FROM top_songs
-WHERE Track != TRIM(Track) OR Artist!= TRIM(Artist);
-
-#No more trimable tracks/artists. Now let's check for duplicates
+#Now let's check for duplicates
 
 WITH dup_cte AS
 (
@@ -40,18 +133,23 @@ SELECT *
 FROM dup_cte
 WHERE row_num >1;
 
-# Only one duplicate in the whole dataset, Vampire by Olivia Rodrigo
+# There are many duplicates in the dataset, let's clean them
 
-SELECT *
+ALTER TABLE top_songs
+ADD COLUMN id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY FIRST;
+
+
+WITH dup_cte AS 
+(
+SELECT id, ROW_NUMBER() OVER ( PARTITION BY Track, Artist ORDER BY id) AS row_num
 FROM top_songs
-WHERE Track = "vampire";
+)
+DELETE t
+FROM top_songs t
+JOIN dup_cte d ON t.id = d.id
+WHERE d.row_num > 1;
 
-# It appears that the second entry of Vampire is a duplicate. It has almost the same number of streams, but the rest of the data is far below that of the first entry
-DELETE 
-FROM top_songs
-WHERE ISRC = "USUG12305004";
-
-# Checking that the duplicate is removed
+# Checking that the duplicates are removed
 WITH dup_cte AS
 (
 SELECT LOWER(Track), LOWER(Artist), ROW_NUMBER() OVER ( PARTITION BY LOWER(Track), LOWER(Artist)) AS row_num
@@ -61,85 +159,45 @@ SELECT *
 FROM dup_cte
 WHERE row_num >1;
 
-# No more duplicates. Now to standardize columns. There are a ton of text columns which could be ints: 
-# Release date, Spotify Streams, etc.
-# Also, TIDAL POPULARITY appears to be blank for every entry. So, let's check that, then drop that column
-SELECT `TIDAL Popularity`
+# No more duplicates. Now to standardize columns and trim the dataset
+# TIDAL POPULARITY appears to be blank for every entry. So, let's check that, then drop that column
+SELECT TIDAL_Popularity
 FROM top_songs
-WHERE `TIDAL Popularity` != ''; 
+WHERE TIDAL_Popularity != ''; 
 # It is blank for every entry, let's drop it
 ALTER TABLE top_songs
-DROP COLUMN `TIDAL Popularity`;
-# Now let's change those variables to be ints. First we need to remove commas
-UPDATE top_songs
-SET `Spotify Streams` = REPLACE(`Spotify Streams`, ",", ""),
-`Spotify Playlist Count` = REPLACE(`Spotify Playlist Count`, ",", ""),
-`Spotify Playlist Reach` = REPLACE(`Spotify Playlist Reach`, ",", ""),
-`YouTube Views` = REPLACE(`YouTube Views`, ",", ""),
-`YouTube Likes` = REPLACE(`YouTube Likes`, ",", ""),
-`TikTok Posts` = REPLACE(`TikTok Posts`, ",", ""),
-`TikTok Likes` = REPLACE(`TikTok Posts`, ",", ""),
-`TikTok Views` = REPLACE(`TikTok Views`, ",", ""),
-`YouTube Playlist Reach` = REPLACE(`YouTube Playlist Reach`, ",", ""),
-`AirPlay Spins` = REPLACE(`AirPlay Spins`, ",", ""),
-`SiriusXM Spins` = REPLACE(`SiriusXM Spins`, ",", ""),
-`Deezer Playlist Reach` = REPLACE(`Deezer Playlist Reach`, ",", ""),
-`Pandora Streams` = REPLACE(`Pandora Streams`, ",", ""),
-`Pandora Track Stations` = REPLACE(`Pandora Track Stations`, ",", ""),
-`Soundcloud Streams` = REPLACE(`Soundcloud Streams`, ",", ""),
-`Shazam Counts` = REPLACE(`Shazam Counts`, ",", "")
-;
-# Now let's convert the columns to ints and convert Explicit Track into a Boolean
-# You may need to run the following line:
-SET SESSION sql_mode = 'NO_ZERO_DATE,NO_ZERO_IN_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';
-
-ALTER TABLE top_songs
-MODIFY COLUMN `Spotify Streams` bigint,
-MODIFY COLUMN `Spotify Playlist Count` int,
-MODIFY COLUMN `Spotify Playlist Reach` int,
-MODIFY COLUMN `YouTube Views` int,
-MODIFY COLUMN `YouTube Likes` int,
-MODIFY COLUMN `TikTok Posts` int,
-MODIFY COLUMN `TikTok Likes` int,
-MODIFY COLUMN `TikTok Views` bigint,
-MODIFY COLUMN `YouTube Playlist Reach` bigint,
-MODIFY COLUMN `AirPlay Spins` int,
-MODIFY COLUMN `SiriusXM Spins` int,
-MODIFY COLUMN `Deezer Playlist Reach` int,
-MODIFY COLUMN `Pandora Streams` int,
-MODIFY COLUMN `Pandora Track Stations` int,
-MODIFY COLUMN `Soundcloud Streams` bigint,
-MODIFY COLUMN `Shazam Counts` int,
-MODIFY COLUMN `Explicit Track` Bool;
+DROP COLUMN TIDAL_Popularity;
 
 # Now, let's make the Release Date column a Date column
-UPDATE top_songs
-SET `Release Date`= STR_TO_DATE(`Release Date`, "%m/%d/%Y");
+UPDATE top_songs 
+SET Release_Date= STR_TO_DATE(Release_Date, "%m/%d/%Y");
 
 ALTER TABLE top_songs
-MODIFY COLUMN `Release Date` date;
+MODIFY COLUMN Release_Date date;
 
 # Now, all our columns are set appropriately. Let's look at the data again
 
 SELECT *
 from top_songs;
 
-# At this point, I would eliminate all null entries. However, there are none. The data appears to be clean and ready for analysis
+# At this point, I would eliminate all null entries if it were neccessary. However, it is safer to keep them as null, so that if the data is used to calculate anything, the null values do not skew the data towards 0. 
 
 # Data Analysis:
 # The first variable which appears interesting is release date. Let's see how many songs from each year are in the data
-SELECT Count(Track), SUBSTRING(`Release Date`, 1,4) as Year
+SELECT Count(Track), SUBSTRING(Release_Date, 1,4) as Year
 FROM top_songs
 GROUP BY Year;
 
-# Interestingly enough, 173 of the top songs are from 2023, 123 are from 2022, and 101 are from 2024
+# Interestingly enough, 1124 of the top songs are from 2023, 681 are from 2022, and 669 are from 2024
 
 #Let's see where my Top 10 Songs from 2024 are on the list
 SELECT *
 FROM top_songs
-WHERE Track = "Creep" OR "Karma Police" OR "Covet" OR "Time in a Bottle" OR "Rooster" OR "One Last Breath" OR "Exit Music (For A Film)" OR "Youngest Daughter" OR "Even Flow" OR "Heart-Shaped Box";
+WHERE Track LIKE "Creep" OR "Karma Police" OR "Covet" OR "Time in a Bottle" OR "Rooster" OR "One Last Breath" OR "Exit Music (For A Film)" OR "Youngest Daughter" OR "Even Flow" OR "Heart-Shaped Box";
 
-# None of my top 10 songs were in the data. I guess that means my music tastes are not popular
+# None of my top 10 songs were in the data, I guess that means my music tastes were not popular in 2024 
+
+# The data is now cleaned and ready for analysis!
 
 
 
