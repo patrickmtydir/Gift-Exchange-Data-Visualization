@@ -1,6 +1,6 @@
 ## Gift Exchange - Data Visualization:
 
-This project contains my replication code for the data visualizations of my solo-authored paper, "Effort Timing and Reciprocity in the Gift Exchange," which I created using Python.
+This repository contains my replication code for the data visualizations of my solo-authored paper, "Effort Timing and Reciprocity in the Gift Exchange," which I created using Python.
 
 Inside the repository, you will find my Python replication file "Gift Exchange Data Visualization.py". Inside the "Aggregate Graphs" folder, you will find as all of the aggregate/treatment graphs and data visualizations. 
 
