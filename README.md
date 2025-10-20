@@ -6,6 +6,6 @@ Inside the repository, you will find my Python replication file "Gift Exchange D
 
 Inside the "After After" and "Effort Before" folders, you will find the data visuializations for individual sessions.
 
-The data is omitted because the paper has not been published, yet. To give you an idea of the data structure, each session subfolder has an excel file named "Transactions.xlsx". In addition, I export a compiled data set named "r\_data.csv", which is also omitted.
+The data is omitted because the paper has not been published, yet. To give you an idea of the data structure, each session subfolder has an excel file named "Transactions.xlsx".
 
 If you would like a copy of the working paper, please feel free to contact me. I am more than happy to share my work.
